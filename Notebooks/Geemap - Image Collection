@@ -1,0 +1,121 @@
+#import essential packages
+import ee
+import geemap
+import os
+import numpy
+
+#Create interactive map in geemap environment
+Map = geemap.Map()
+
+vis_params = {"min": 0, 
+              "max": 4000, 
+              "bands": ["B4", "B3", "B2"]
+} 
+
+#Gather images of Amsterdam  
+CollectionA = ee.ImageCollection('COPERNICUS/S2_SR') \
+    .filterBounds(ee.Geometry.Point([4.82, 52.40])) \
+    .filterDate('2020-03-01', '2020-05-31') \
+    .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 10) \
+    .sort('CLOUDY_PIXEL_PERCENTAGE', False)
+
+#Get GEE ID collection
+print(CollectionA.aggregate_array('system:index').getInfo()) 
+
+#Gather images of Milano 
+CollectionM = ee.ImageCollection('COPERNICUS/S2_SR') \
+    .filterBounds(ee.Geometry.Point([9.18, 45.46])) \
+    .filterDate('2020-03-01', '2020-05-31') \
+    .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 10) \
+    .sort('CLOUDY_PIXEL_PERCENTAGE', False)
+
+#Get GEE ID collection
+print(CollectionM.aggregate_array('system:index').getInfo()) 
+
+#Gather images of Budapest 
+CollectionB = ee.ImageCollection('COPERNICUS/S2_SR') \
+    .filterBounds(ee.Geometry.Point([19.06, 47.49])) \
+    .filterDate('2020-03-01', '2020-05-31') \
+    .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 10) \
+    .sort('CLOUDY_PIXEL_PERCENTAGE', False)
+
+#Get GEE ID collection
+print(CollectionB.aggregate_array('system:index').getInfo()) 
+
+#Median operator on GEE Image collection
+medianA = CollectionA.median()
+medianM = CollectionM.median()
+medianB = CollectionB.median()
+
+Map.addLayer(medianM, vis_params, "Sentinel-2 Milano", False)
+Map.addLayer(medianB, vis_params, "Sentinel-2 Budapest", False)
+Map.addLayer(medianA, vis_params, "Sentinel-2 Amsterdam", False)
+
+#Add BoundingBox shapefiles to interactive map for ROI
+Amsterdam_shp = 'F:/_UNIVERSITEIT/_UNIVERSITEIT_UTRECHT_Master/(GEO4-GIMA7)_Master_Thesis/GIS/Data/Analysis/Shapes/BoundingBoxAmsterdam2.shp' 
+Amsterdam = geemap.shp_to_ee(Amsterdam_shp) 
+Map.addLayer(Amsterdam, {}, 'AmsterdamBB') 
+roiA = Amsterdam.geometry()
+
+Milano_shp = 'F:/_UNIVERSITEIT/_UNIVERSITEIT_UTRECHT_Master/(GEO4-GIMA7)_Master_Thesis/GIS/Data/Analysis/Shapes/BoundingBoxMilano2.shp' 
+Milano = geemap.shp_to_ee(Milano_shp) 
+Map.addLayer(Milano, {}, 'MilanoBB') 
+roiM = Milano.geometry()
+
+Budapest_shp = 'F:/_UNIVERSITEIT/_UNIVERSITEIT_UTRECHT_Master/(GEO4-GIMA7)_Master_Thesis/GIS/Data/Analysis/Shapes/BoundingBoxBudapest2.shp' 
+Budapest = geemap.shp_to_ee(Budapest_shp) 
+Map.addLayer(Budapest, {}, 'BudapestBB') 
+roiB = Budapest.geometry()
+
+#Display single images for visual inspection
+imageAS = ee.Image('COPERNICUS/S2_SR/20200405T104619_20200405T105015_T31UFU')
+imageASC = imageAS.clip(roiA).unmask() 
+imageASC = imageASC.toUint16()
+Map.addLayer(imageASC, vis_params, 'AmsterdamSingleImage')
+
+imageMS = ee.Image('COPERNICUS/S2_SR/20200411T102021_20200411T102438_T32TNR')
+imageMSC = imageMS.clip(roiM).unmask()
+imageMSC = imageMSC.toUint16()
+Map.addLayer(imageMSC, vis_params, 'MilanoSingleImage')
+
+imageBS = ee.Image('COPERNICUS/S2_SR/20200422T095031_20200422T095031_T33TYN')
+imageBSC = imageBS.clip(roiB).unmask()
+imageBSC = imageBSC.toUint16()
+Map.addLayer(imageBSC, vis_params, 'BudapestSingleImage')
+
+#Composite image collection using median function
+imageAM = ee.Image(medianA) 
+imageAMC = imageAM.clip(roiA).unmask()
+imageAMC = imageAMC.toUint16()
+Map.addLayer(imageAMC, vis_params, 'Amsterdamclip') 
+
+imageMM = ee.Image(medianM) 
+imageMMC = imageMM.clip(roiM).unmask()
+imageMMC = imageMMC.toUint16()
+Map.addLayer(imageMMC, vis_params, 'Milanoclip') 
+
+imageBM = ee.Image(medianB) 
+imageBMC = imageBM.clip(roiB).unmask() 
+imageBMC = imageBMC.toUint16()
+Map.addLayer(imageBMC, vis_params, 'Budapestclip') 
+
+#Display
+Map 
+
+#Export Single Image Amsterdam to drive
+geemap.ee_export_image_to_drive(imageASC, description='AmsterdamSI', folder='Amsterdam', region=roiA, scale=10)
+
+#Export Single Image Milano to drive
+geemap.ee_export_image_to_drive(imageMSC, description='MilanoSI', folder='Milano', region=roiM, scale=10)
+
+#Export Single Image Budapest to drive
+geemap.ee_export_image_to_drive(imageBSC, description='BudapestSI', folder='Budapest', region=roiB, scale=10)
+
+#Export Multi Image Amsterdam to drive
+geemap.ee_export_image_to_drive(imageAMC, description='Amsterdam', folder='Amsterdam', region=roiA, scale=10)
+
+#Export Multi Image Milano to drive
+geemap.ee_export_image_to_drive(imageMMC, description='Milano', folder='Milano', region=roiM, scale=10)
+
+#Export Multi Image Budapest to drive
+geemap.ee_export_image_to_drive(imageBMC, description='Budapest', folder='Budapest', region=roiB, scale=10)
