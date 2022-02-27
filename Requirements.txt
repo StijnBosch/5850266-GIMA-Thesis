@@ -1,0 +1,14 @@
+Requirements
+
+module / version
+python = 3.8
+numpy = 1.21.4
+gdal = 3.4.0
+rasterio = 1.2.10
+earthpy = 0.9.4
+scipy = 1.7.3
+skimage = 0.19.1
+geemap = 0.10.1
+ee = 0.1.292
+sklearn = 1.0.1
+matplotlib = 3.5.1
