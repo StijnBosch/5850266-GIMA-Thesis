@@ -1,6 +1,6 @@
 clear
 close all
-I = double(imread('Subset_SingleDateImage_Amsterdam.tif'));
+I = double(imread('SingleDateImage_Amsterdam.tif'));
 %I = I(1:50,1:50,:); % part of the image
 
 Sz = size(I);
