@@ -1,8 +1,6 @@
 # 5850266-GIMA-Thesis
 Github repository containing all scripts and data related to GIMA M. Sc. Thesis "Impervious surface mapping using Remote Sensing and Social Media data" by Stijn Bosch (Utrecht University)
 
-All datasets can be downloaded via: 
-
 1.	Selection of case studies
 The first step in the data preparation workflow is the selection of case studies based on the spatial distribution of Twitter in Europe. This has been carried out using QGIS and Excel. The data required for this step is the Twitter data, provided by ITC Faculty of Geo-Information Science and Earth Observation and the Local Administrative Units dataset, provided by the Eurostat (Eurostat, 2020). The practical steps are described below.
 
